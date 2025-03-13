@@ -13,6 +13,7 @@
         "type_traits": "c",
         "utility": "c",
         "random": "c",
-        "inttypes.h": "c"
+        "inttypes.h": "c",
+        "windows.h": "c"
     }
 }
