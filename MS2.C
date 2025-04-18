@@ -19,12 +19,17 @@ enum State {
     Blocked
   };
 
-  int MemorySize = 2048;
+  int MemorySize = 60;
   
-
-int main()
-{
-
-    printf("Hello World");
-
-}
+  int main()
+  {
+    FILE *fptr = fopen("text.txt", "r");
+  
+    char stra[9999];
+    while (fgets(stra, sizeof(stra), fptr) != NULL)
+    {
+      printf("%s", stra);
+    }
+    fclose(fptr);
+    return 0;
+  }
