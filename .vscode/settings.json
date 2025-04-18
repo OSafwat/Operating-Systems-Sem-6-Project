@@ -16,5 +16,6 @@
         "inttypes.h": "c",
         "windows.h": "c",
         "MS2.C": "cpp"
-    }
+    },
+    "C_Cpp.errorSquiggles": "disabled"
 }

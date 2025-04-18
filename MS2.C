@@ -1,7 +1,13 @@
 
 #include <stdio.h>
+#include <string.h>
 
 
+enum State {
+  Ready,
+  Running,
+  Blocked
+};
 
 struct PCB
 {
@@ -13,23 +19,43 @@ struct PCB
    long Mem_Bound_Down;
 };
 
-enum State {
-    Ready,
-    Running,
-    Blocked
-  };
+
 
   int MemorySize = 60;
+  int WordSize = 32;
+  
+
+  static FILE *fptr = fopen("Program_1.txt", "r");
+
+  
+  char[] -,getInstruction(){
+    char Line[WordSize];
+
+
+    if (fgets(Line, sizeof(Line), fptr) != NULL)
+    {
+      //printf("%s", Line);
+      return Line
+    }
+    else{
+    return NULL;
+    }
+
+  }
+
+  
   
   int main()
   {
-    FILE *fptr = fopen("text.txt", "r");
+ 
   
-    char stra[9999];
-    while (fgets(stra, sizeof(stra), fptr) != NULL)
-    {
-      printf("%s", stra);
-    }
-    fclose(fptr);
-    return 0;
+char *token;
+char Line[];
+Line = getInstruction();
+printf("%s",*(Line));
+
+
+
   }
+
+
