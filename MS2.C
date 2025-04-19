@@ -2,107 +2,81 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <PCB.h>
 
+int MemorySize = 60;
+int WordSize = 32;
 
-enum State {
-  Ready,
-  Running,
-  Blocked
-};
+static FILE *fptr = fopen("Program_1.txt", "r");
 
-struct PCB
+char *getInstruction()
 {
-   int ProcessID;
-   enum State ProcessState;
-   int Priority;
-   long ProgramCounter;
-   long Mem_Bound_Up;
-   long Mem_Bound_Down;
-};
+  char *Line = (char *)malloc(99);
 
-
-
-  int MemorySize = 60;
-  int WordSize = 32;
-  
-  static FILE *fptr = fopen("Program_1.txt", "r");
-
-  char* getInstruction(){
-    char* Line = (char*) malloc(99);
-
-
-    if (fgets(Line, 99, fptr) != NULL)
-    {
-      //printf("%s", Line);
-      //printf("%s",Line);
-      return Line;
-    }
-    else{
-      return NULL;
-    }
-
-  }
-
-  
-  
-int main()
+  if (fgets(Line, 99, fptr) != NULL)
   {
-char* Line;
-Line = getInstruction();
-Line = getInstruction();
-strtok(Line," ");
-
-  if(strcmp(Line,"print")==0){
-Line = strtok(NULL, " ");
-printf("%s",Line);
+    // printf("%s", Line);
+    // printf("%s",Line);
+    return Line;
+  }
+  else
+  {
+    return NULL;
+  }
 }
 
-  if(strcmp(Line,"assign")==0){
-    
-    char* Charvalue =(char*) malloc(100);
+int main()
+{
+  char *Line;
+  Line = getInstruction();
+  Line = getInstruction();
+  strtok(Line, " ");
+
+  if (strcmp(Line, "print") == 0)
+  {
+    Line = strtok(NULL, " ");
+    printf("%s", Line);
+  }
+
+  if (strcmp(Line, "assign") == 0)
+  {
+
+    char *Charvalue = (char *)malloc(100);
     int IntValue;
     Line = strtok(NULL, " ");
-    char* VariableName = Line;  // we saved the name of the variable they used
-    printf("%s \n",VariableName); //
+    char *VariableName = Line;     // we saved the name of the variable they used
+    printf("%s \n", VariableName); //
     Line = strtok(NULL, " ");
     printf("Please Enter a Value: ");
     scanf("%s", Charvalue);
-      if(strtol(Charvalue,NULL,10)>0){          //if its ==0 then input is a String
-      IntValue = strtol(Charvalue,NULL,10);
+    if (strtol(Charvalue, NULL, 10) > 0)
+    { // if its ==0 then input is a String
+      IntValue = strtol(Charvalue, NULL, 10);
       free(Charvalue);
-      printf("%d",IntValue);
+      printf("%d", IntValue);
     }
-       else{
-      printf("%s",Charvalue);
+    else
+    {
+      printf("%s", Charvalue);
     }
-
-
-
-
-}
-  if(strcmp(Line,"writeFile")==0){
-  
-}
-
-  if(strcmp(Line,"readFile")==0){
-  
-}
-
-  if(strcmp(Line,"printFromTo")==0){
-  
-}
-
-  if(strcmp(Line,"semWait")==0){
-  
-}
-
-  if(strcmp(Line,"semSignal")==0){
-  
-}
-
-
-
-
+  }
+  if (strcmp(Line, "writeFile") == 0)
+  {
   }
 
+  if (strcmp(Line, "readFile") == 0)
+  {
+  }
 
+  if (strcmp(Line, "printFromTo") == 0)
+  {
+  }
+
+  if (strcmp(Line, "semWait") == 0)
+  {
+  }
+
+  if (strcmp(Line, "semSignal") == 0)
+  {
+  }
+}

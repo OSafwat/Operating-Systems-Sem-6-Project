@@ -15,7 +15,8 @@
         "random": "c",
         "inttypes.h": "c",
         "windows.h": "c",
-        "MS2.C": "cpp"
+        "MS2.C": "cpp",
+        "stdint.h": "c"
     },
     "C_Cpp.errorSquiggles": "enabled"
 }
