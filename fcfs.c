@@ -1,77 +1,134 @@
-#ifndef FCFS_H
-#define FCFS_H
+// fcfs.c
+#include "fcfs.h"
 
-#include "pcb.h"
+#include <stdlib.h>
+#include <string.h>
 
-/// one FCFS task = its PCB + path to its “file” + arrival time
-typedef struct
+#include <unistd.h>    // for fork(), _exit()
+#include <sys/types.h> // for pid_t
+#include <sys/wait.h>  // for waitpid(), WIFEXITED, WEXITSTATUS
+
+struct FCFS_Scheduler
 {
-    PCB pcb;
-    char *path;
-    int arrival;
-} FCFS_Task;
+    FCFS_Task *tasks; // dynamic array of tasks
+    int n;            // current number of tasks
+    int cap;          // current capacity of the array
+};
 
-typedef struct FCFS_Scheduler FCFS_Scheduler;
+FCFS_Scheduler *fcfs_create(int initial_capacity)
+{
+    FCFS_Scheduler *S = malloc(sizeof *S);
+    if (!S)
+        return NULL;
 
-FCFS_Scheduler *fcfs_create(int initial_capacity);
+    S->tasks = calloc(initial_capacity, sizeof *S->tasks);
+    if (!S->tasks)
+    {
+        free(S);
+        return NULL;
+    }
 
-/**
+    S->n = 0;
+    S->cap = initial_capacity;
+    return S;
+}
 
-Destroy an FCFS scheduler and free all resources.
-*/
-void fcfs_destroy(FCFS_Scheduler *s);
+void fcfs_destroy(FCFS_Scheduler *S)
+{
+    if (!S)
+        return;
 
-/**
+    // free each strdup'd path
+    for (int i = 0; i < S->n; i++)
+        free(S->tasks[i].path);
 
-Insert a new FCFS task:
+    free(S->tasks);
+    free(S);
+}
 
-
-
-arrival: arrival time for ordering
-
-
-
-path:    string identifier or executable path
-
-
-
-priority: stored in pcb.Priority (ignored by FCFS)
-
-Returns 0 on success, -1 on failure.
-*/
-int fcfs_insert_task(FCFS_Scheduler *s,
+int fcfs_insert_task(FCFS_Scheduler *S,
                      int arrival,
-                     const char *path,
-                     int priority);
+                     const char *path)
+{
+    // grow array if needed
+    if (S->n >= S->cap)
+    {
+        int nc = S->cap * 2;
+        FCFS_Task *t = realloc(S->tasks, nc * sizeof *t);
+        if (!t)
+            return -1;
+        S->tasks = t;
+        S->cap = nc;
+    }
 
-/**
+    // initialize the new slot
+    FCFS_Task *T = &S->tasks[S->n++];
+    T->arrival = arrival;
+    T->path = strdup(path);      // make our own copy
+    T->pcb.ProcessID = S->n;     // simple ID assignment
+    T->pcb.ProcessState = Ready; // initial state
+    T->pcb.Priority = 0;         // stored but unused by FCFS
+    T->pcb.ProgramCounter = 0;
+    T->pcb.Mem_Bound_Up = 0;
+    T->pcb.Mem_Bound_Down = 0;
 
-Run the next FCFS task (smallest arrival):
+    return 0;
+}
 
+int fcfs_task_count(const FCFS_Scheduler *S)
+{
+    return S->n;
+}
 
+int fcfs_run_next(FCFS_Scheduler *S)
+{
+    if (S->n == 0)
+        return -1;
 
-forks & execs the task->path
+    // find the task with earliest arrival time
+    int idx = 0;
+    for (int i = 1; i < S->n; i++)
+    {
+        if (S->tasks[i].arrival < S->tasks[idx].arrival)
+            idx = i;
+    }
 
+    FCFS_Task *T = &S->tasks[idx];
+    T->pcb.ProcessState = Running;
 
+    pid_t pid = fork();
+    if (pid < 0)
+    {
+        return -1; // fork failed
+    }
+    if (pid == 0)
+    {
+        // child: replace with the task executable
+        execl(T->path, T->path, NULL);
+        _exit(1); // if exec fails
+    }
 
-waits for completion, updates PCB state to Blocked
+    // parent: wait for the child to finish
+    int status;
+    waitpid(pid, &status, 0);
+    T->pcb.ProcessState = Blocked;
+    return WIFEXITED(status) ? WEXITSTATUS(status) : -1;
+}
 
-Returns exit code (>=0) or -1 if empty.
-*/
-int fcfs_run_next(FCFS_Scheduler *s);
-
-/**
-
-Remove a task by its ProcessID (from pcb):
-
-Returns 0 if found & removed, -1 if not found.
-*/
-int fcfs_remove_task(FCFS_Scheduler *s, int process_id);
-
-/**
-
-Number of tasks currently queued.
-*/
-int fcfs_task_count(const FCFS_Scheduler *s);
-
-#endif // FCFS_H
+int fcfs_remove_task(FCFS_Scheduler *S, int process_id)
+{
+    for (int i = 0; i < S->n; i++)
+    {
+        if (S->tasks[i].pcb.ProcessID == process_id)
+        {
+            free(S->tasks[i].path);
+            // shift remaining tasks down by one
+            memmove(&S->tasks[i],
+                    &S->tasks[i + 1],
+                    (S->n - i - 1) * sizeof *S->tasks);
+            S->n--;
+            return 0;
+        }
+    }
+    return -1; // not found
+}

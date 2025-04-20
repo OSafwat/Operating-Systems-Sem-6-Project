@@ -17,7 +17,8 @@
         "windows.h": "c",
         "MS2.C": "cpp",
         "stdint.h": "c",
-        "MS2 (2).C": "cpp"
+        "MS2 (2).C": "cpp",
+        "stdlib.h": "c"
     },
     "C_Cpp.errorSquiggles": "enabled"
 }

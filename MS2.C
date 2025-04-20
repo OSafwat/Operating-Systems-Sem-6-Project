@@ -119,20 +119,19 @@ void parse(char *Line)
 int main()
 {
   char *Line;
-  Line = getInstruction();
+  // Line = getInstruction();
 
   // parse(Line);
   // Line = getInstruction();
-  // printf("%s",Line);
+  // printf("%s", Line);
   // parse(Line);
   // Line = getInstruction();
-  // printf("%s",Line);
+  // printf("%s", Line);
   // parse(Line);
 
-  // do{
-  //   Line=getInstruction();
-  // }
-  // while (Line!=NULL);
-  // printf("%s",Line);
-  // parse(Line);
+  do
+  {
+    Line = getInstruction();
+    parse(Line);
+  } while (Line != NULL);
 }
