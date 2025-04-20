@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <PCB.h>
+//#include <PCB.h>
 
 int MemorySize = 60;
 int WordSize = 32;
@@ -25,12 +25,9 @@ char *getInstruction()
   }
 }
 
-int main()
-{
-  char *Line;
-  Line = getInstruction();
-  Line = getInstruction();
-  strtok(Line, " ");
+
+void parse(char* Line){
+  Line = strtok(Line, " ");
 
   if (strcmp(Line, "print") == 0)
   {
@@ -38,7 +35,7 @@ int main()
     printf("%s", Line);
   }
 
-  if (strcmp(Line, "assign") == 0)
+  else{ if (strcmp(Line, "assign") == 0)
   {
 
     char *Charvalue = (char *)malloc(100);
@@ -60,23 +57,72 @@ int main()
       printf("%s", Charvalue);
     }
   }
-  if (strcmp(Line, "writeFile") == 0)
+  else{ if (strcmp(Line, "writeFile") == 0)
   {
   }
 
-  if (strcmp(Line, "readFile") == 0)
+  else{ if (strcmp(Line, "readFile") == 0)
   {
   }
 
-  if (strcmp(Line, "printFromTo") == 0)
+  else{ if (strcmp(Line, "printFromTo") == 0)
+  {
+    int Value1;
+    int Value2;
+    Line = strtok(NULL, " ");
+    Value1 = strtol(Line,NULL,10);
+    Line = strtok(NULL, " ");
+    Value2 = strtol(Line,NULL,10);
+    
+    for(int i=Value1;i<=Value2;i++){
+      if(i!=Value2)
+      printf("%d,",i);
+      else{
+        printf("%d",i);
+      }
+    }
+  }
+
+  else{ if (strcmp(Line, "semWait") == 0)
   {
   }
 
-  if (strcmp(Line, "semWait") == 0)
+  else{ if (strcmp(Line, "semSignal") == 0)
   {
   }
+  else{
+    printf("Error: Instruction Not Recognized\n");
+  }
+    }
+      }
+        }
+          }
+            }
+              } 
+                }
 
-  if (strcmp(Line, "semSignal") == 0)
-  {
-  }
+
+
+  int main()
+{
+  char *Line;
+  Line = getInstruction();
+  
+  // parse(Line);
+  // Line = getInstruction();
+  // printf("%s",Line);
+  // parse(Line);
+  // Line = getInstruction();
+  // printf("%s",Line);
+  // parse(Line);
+
+  // do{
+  //   Line=getInstruction();
+  // }
+  // while (Line!=NULL);
+  // printf("%s",Line);
+  // parse(Line);
+
+ 
 }
+
