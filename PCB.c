@@ -1,7 +1,6 @@
 #include "PCB.h"
-#include <stdlib.h>
 
-void Copy(PCB *pcb, PCB pcbInput)
+void Copy(PCB *pcb, const PCB pcbInput)
 {
     pcb->memStart = pcbInput.memStart;
     pcb->memEnd = pcbInput.memEnd;
@@ -11,11 +10,17 @@ void Copy(PCB *pcb, PCB pcbInput)
     pcb->programCounter = pcbInput.programCounter;
 }
 
-char *StateString(PCB *pcb)
+const char *StateString(PCB *pcb)
 {
-    if (pcb->processState == Ready)
+    switch (*(pcb->processState))
+    {
+    case Ready:
         return "Ready";
-    if (pcb->processState == Running)
+    case Running:
         return "Running";
-    return "Blocked";
+    case Blocked:
+        return "Blocked";
+    default:
+        return "Unknown";
+    }
 }
