@@ -12,18 +12,18 @@ typedef struct
     int timeQuantum;
     int currentQuantum;
     bool currentlyRunning;
-} RRS_Scheduler;
+} RR_Scheduler;
 
-RRS_Scheduler *RRSCreate(int timeQuantum);
+RR_Scheduler *RRSCreate(int timeQuantum);
 
-void RRSInsertTask(RRS_Scheduler *scheduler, PCB pcb);
+void RRSInsertTask(RR_Scheduler *scheduler, PCB pcb);
 
-void RRSRemoveTask(RRS_Scheduler *scheduler);
+void RRSRemoveTask(RR_Scheduler *scheduler);
 
-void RRSStart(RRS_Scheduler *scheduler);
+void RRSStart(RR_Scheduler *scheduler);
 
-void RRSEnd(RRS_Scheduler *scheduler);
+void RRSEnd(RR_Scheduler *scheduler);
 
-void RRSBlock(RRS_Scheduler *scheduler);
+void RRSBlock(RR_Scheduler *scheduler);
 
 #endif

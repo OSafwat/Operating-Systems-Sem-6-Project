@@ -2,27 +2,27 @@
 #include "Queue.h"
 // #include "whateverFileWillContainTheCommands"
 
-RRS_Scheduler *RRSCreate(int timeQuantum)
+RR_Scheduler *RRSCreate(int timeQuantum)
 {
-    RRS_Scheduler *s = malloc(sizeof(RRS_Scheduler));
-    s->readyQueue = malloc(sizeof(Queue));
+    RR_Scheduler *s = malloc(sizeof(RR_Scheduler));
+    s->readyQueue = CreateQueue();
     s->timeQuantum = timeQuantum;
-    s->blockedQueue = malloc(sizeof(Queue));
+    s->blockedQueue = CreateQueue();
     s->currentQuantum = 0;
     return s;
 }
 
-void RRSInsertTask(RRS_Scheduler *scheduler, PCB pcb)
+void RRSInsertTask(RR_Scheduler *scheduler, PCB pcb)
 {
     InsertLast(scheduler->readyQueue, pcb);
 }
 
-void FCFSRemoveTask(RRS_Scheduler *scheduler)
+void FCFSRemoveTask(RR_Scheduler *scheduler)
 {
     RemoveFirst(scheduler->readyQueue);
 }
 
-void RRSStart(RRS_Scheduler *scheduler)
+void RRSStart(RR_Scheduler *scheduler)
 {
     if (!scheduler->readyQueue->size || !scheduler->currentlyRunning)
         return;
@@ -43,18 +43,18 @@ void RRSStart(RRS_Scheduler *scheduler)
     else
     {
         // not finished, rotate
-        Rotate(scheduler->readyQueue);
+        InsertLast(scheduler->readyQueue, RemoveFirst(scheduler->readyQueue));
     }
     return;
 }
 
-void RRSStop(RRS_Scheduler *scheduler)
+void RRSStop(RR_Scheduler *scheduler)
 {
     scheduler->currentlyRunning = false;
     return;
 }
 
-void RRSBlock(RRS_Scheduler *scheduler)
+void RRSBlock(RR_Scheduler *scheduler)
 {
     PCB pcb = RemoveFirst(scheduler->readyQueue->first);
     InsertLast(scheduler->readyQueue, pcb);

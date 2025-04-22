@@ -73,10 +73,38 @@ PCB RemoveFirst(Queue *queue)
     return pcbRes;
 }
 
-void Rotate(Queue *queue)
+void PriorityInsert(Queue *queue, PCB pcb)
 {
-    if (queue->size <= 1)
+    if (!queue->size)
+    {
+        InsertFirst(queue, pcb);
         return;
-    PCB pcb = RemoveFirst(queue);
-    InsertLast(queue, pcb);
+    }
+    if ((queue->first->pcb->priority > pcb.priority))
+    {
+        InsertFirst(queue, pcb);
+        return;
+    }
+    if ((queue->last->pcb->priority <= pcb.priority))
+    {
+        InsertLast(queue, pcb);
+        return;
+    }
+    Node *node = queue->first;
+    while (node->next != NULL)
+    {
+        if (node->next->pcb->priority > pcb.priority)
+        {
+            // this is where it should be inserted, after this current node
+            break;
+        }
+        node = node->next;
+    }
+    Node *oldNext = node->next;
+    Node *newNext = malloc(sizeof(Node));
+    newNext->pcb = malloc(sizeof(PCB));
+    Copy(newNext->pcb, pcb);
+    node->next = newNext;
+    newNext->next = oldNext;
+    queue->size++;
 }

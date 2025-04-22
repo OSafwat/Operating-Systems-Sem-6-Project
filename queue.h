@@ -24,6 +24,6 @@ void InsertLast(Queue *queue, PCB pcb);
 
 PCB RemoveFirst(Queue *queue);
 
-void Rotate(Queue *queue);
+void PriorityInsert(Queue *queue, PCB pcb);
 
 #endif // FCFS_H

@@ -5,7 +5,7 @@
 FCFS_Scheduler *FCFSCreate()
 {
     FCFS_Scheduler *s = malloc(sizeof(FCFS_Scheduler));
-    s->readyQueue = malloc(sizeof(Queue));
+    s->readyQueue = CreateQueue();
     s->currentlyRunning = false;
     return s;
 }

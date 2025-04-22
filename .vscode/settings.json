@@ -24,7 +24,8 @@
         "queue.h": "c",
         "text_encoding": "cpp",
         "typeindex": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "mlfqs.h": "c"
     },
     "C_Cpp.errorSquiggles": "enabled"
 }
