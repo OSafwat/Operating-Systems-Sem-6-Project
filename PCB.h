@@ -11,12 +11,16 @@ typedef enum
 
 typedef struct
 {
-    int ProcessID;
-    State ProcessState;
-    int Priority;
-    long ProgramCounter;
-    long Mem_Bound_Up;
-    long Mem_Bound_Down;
+    int processID;
+    State *processState;
+    int priority;
+    long programCounter;
+    long memStart;
+    long memEnd;
 } PCB;
+
+char *StateString(PCB *pcb);
+
+void Copy(PCB *pcb, PCB pcbInput);
 
 #endif

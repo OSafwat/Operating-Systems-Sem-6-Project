@@ -1,25 +1,24 @@
 #ifndef FCFS_H
 #define FCFS_H
 
-#include "pcb.h"
+#include "Queue.h"
+#include <stdio.h>
+#include <stdbool.h>
 
 typedef struct
 {
-    PCB pcb;
-    char *path;
-} Task;
+    Queue *readyQueue;
+    bool currentlyRunning;
+} FCFS_Scheduler;
 
-typedef struct
-{
-    Task *tasks;
-    int size;
-    int maxCapacity;
-} Scheduler;
+FCFS_Scheduler *FCFSCreate(void);
 
-Scheduler *fcfs_create(int count);
+void FCFSInsertTask(FCFS_Scheduler *scheduler, PCB pcb);
 
-int fcfs_insert_task(Scheduler *sched, PCB pcb, const char *path);
+void FCFSRemoveTask(FCFS_Scheduler *scheduler);
 
-void fcfs_start(Scheduler *sched);
+void FCFSStart(FCFS_Scheduler *scheduler);
 
-#endif // FCFS_H
+void FCFSStop(FCFS_Scheduler *scheduler);
+
+#endif

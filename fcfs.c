@@ -1,43 +1,47 @@
 #include "fcfs.h"
-#include "PCB.h"
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/wait.h>
+#include "Queue.h"
+// #include "whateverFileWillContainTheCommands"
 
-Scheduler *fcfs_create(int count)
+FCFS_Scheduler *FCFSCreate()
 {
-    Scheduler *s = malloc(sizeof *s);
-    s->tasks = calloc(count, sizeof s->tasks);
-    s->maxCapacity = count;
-    s->size = 0;
+    FCFS_Scheduler *s = malloc(sizeof(FCFS_Scheduler));
+    s->readyQueue = malloc(sizeof(Queue));
+    s->currentlyRunning = false;
     return s;
 }
 
-int fcfs_insert_task(Scheduler *s, PCB pcb, char *path)
+void FCFSInsertTask(FCFS_Scheduler *scheduler, PCB pcb)
 {
-    if (s->size == s->maxCapacity)
-        return -1; // to mark invalidity
-
-    Task *currentSlot = &s->tasks[s->size];
-    currentSlot->path = strdup(path);
-    currentSlot->pcb = pcb;
-    s->size++;
-    return 0;
+    InsertLast(scheduler->readyQueue, pcb);
 }
 
-void fcfs_start(Scheduler *s)
+void FCFSRemoveTask(FCFS_Scheduler *scheduler)
 {
-    for (int i = 0; i < s->size; i++)
+    RemoveFirst(scheduler->readyQueue);
+}
+
+void FCFSStart(FCFS_Scheduler *scheduler)
+{
+    if (!scheduler->readyQueue->size)
+        return;
+
+    while (scheduler->currentlyRunning && scheduler->readyQueue->first->pcb->programCounter != scheduler->readyQueue->first->pcb->memEnd)
     {
-        int pid = fork();
-        if (pid == 0)
-        {
-            execl(s->tasks[i].path, s->tasks[i].path, (char *)NULL);
-        }
-        else
-        {
-            waitpid(pid, NULL, 0);
-        }
+        // run_line(scheduler->readyQueue->first->pcb)
+        scheduler->readyQueue->first->pcb->programCounter++;
     }
+
+    if (scheduler->readyQueue->first->pcb->programCounter == scheduler->readyQueue->first->pcb->memEnd)
+    {
+        // finished
+        FCFSRemoveTask(scheduler);
+        return;
+    }
+    return;
+}
+
+void FCFSStop(FCFS_Scheduler *scheduler)
+{
+    scheduler->currentlyRunning = false;
+    return;
 }

@@ -1,5 +1,6 @@
 print test
 assign a input
+---------
 semWait userInput
 assign a input
 assign b input

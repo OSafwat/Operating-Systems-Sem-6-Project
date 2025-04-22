@@ -18,7 +18,13 @@
         "MS2.C": "cpp",
         "stdint.h": "c",
         "MS2 (2).C": "cpp",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "cstdlib": "c",
+        "pcb.h": "c",
+        "queue.h": "c",
+        "text_encoding": "cpp",
+        "typeindex": "cpp",
+        "typeinfo": "cpp"
     },
     "C_Cpp.errorSquiggles": "enabled"
 }
