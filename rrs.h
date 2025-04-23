@@ -8,7 +8,7 @@
 typedef struct
 {
     Queue *readyQueue;
-    Queue *blockedQueue;
+    Queue *blockedQueue[3];
     int timeQuantum;
     int currentQuantum;
     bool currentlyRunning;
@@ -25,5 +25,7 @@ void RRSStart(RR_Scheduler *scheduler);
 void RRSEnd(RR_Scheduler *scheduler);
 
 void RRSBlock(RR_Scheduler *scheduler);
+
+void RRSStep(RR_Scheduler *scheduler);
 
 #endif

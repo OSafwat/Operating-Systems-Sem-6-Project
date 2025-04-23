@@ -21,4 +21,6 @@ void FCFSStart(FCFS_Scheduler *scheduler);
 
 void FCFSStop(FCFS_Scheduler *scheduler);
 
+void FCFSStep(FCFS_Scheduler *scheduler);
+
 #endif

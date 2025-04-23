@@ -14,12 +14,12 @@ typedef struct
     int processID;
     State *processState;
     int priority;
-    long programCounter;
-    long memStart;
-    long memEnd;
+    int programCounter;
+    int memStart;
+    int memEnd;
 } PCB;
 
-char *StateString(PCB *pcb);
+char *stateString(PCB *pcb);
 
 void Copy(PCB *pcb, PCB pcbInput);
 
