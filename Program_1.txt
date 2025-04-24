@@ -1,10 +1,9 @@
-print test
+print test 
 assign a input
----------
-semWait userInput
+semWait userInput 
 assign a input
-assign b input
+assign b input 
 semSignal userInput
-semWait userOutput
+semWait userOutput 
 printFromTo a b
-semSignal userOutput
+semSignal userOutput 

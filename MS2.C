@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include "PCB.h"
-#include <queue.h>
+//#include <queue.h>
 
 typedef struct
 {
@@ -18,6 +18,9 @@ long ParseInt(Memory_Word *memoryWord)
 
 char *NumToString(long number)
 {
+  if(number == 0){
+    return (char *) "0";
+  }
   int sz = 0;
   long temp = number;
   while (temp)
@@ -37,13 +40,26 @@ char *NumToString(long number)
   return string;
 }
 
+
+
 long MemorySize = 60;
 long WordSize = 32;
 
-long Pid = 0;
+int Pid = 1;
 
 Memory_Word memory[60] = {0};
 long Currentline = 0;
+
+
+//
+//
+//
+//
+//
+//
+//
+
+
 
 //
 //
@@ -54,22 +70,40 @@ long Currentline = 0;
 //
 
 static FILE *fptr1 = fopen("Program_1.txt", "r");
+static FILE *fptr2 = fopen("Program_2.txt", "r");
 
-char *GetInstruction(FILE *fptr)
-{
-  char *line = (char *)malloc(99);
+char* GetInstruction(FILE *file, int line_number) {
+  if (file == NULL || line_number < 1) return NULL;
 
-  if (fgets(line, 99, fptr) != NULL)
-  {
-    // printf("%s", line);
-    // printf("%s",line);
-    return line;
+  static char buffer[99]; // Adjust size as needed
+  int current_line = 1;
+
+  rewind(file); 
+
+  while (fgets(buffer, sizeof(buffer), file)) {
+      if (current_line == line_number) {
+          return buffer;
+      }
+      current_line++;
   }
-  else
-  {
-    return NULL;
-  }
+
+  return NULL; // Line not found
 }
+
+//
+//
+//
+//
+//
+//
+//
+
+
+void makeReady (PCB *pcb){
+  memory[(pcb->memStart+1)].value = (char*) "Ready";
+}
+
+
 
 //
 //
@@ -129,14 +163,52 @@ void OutputMutexRelease()
 //
 //
 
-void Parse(char *line, PCB *CurrentProcess)
+char *readFile(char *line, PCB *currentProcess)
 {
-  line = strtok(line, " ");
+  if (strcmp(line, "readFile") == 0)
+  {
+    line = strtok(NULL, " ");
+    for (long i = currentProcess->memStart; i < currentProcess->memEnd; i++)
+    {
+      if (strcmp(line, memory[i].name) == 0)
+      {
+        return memory[i].value;
+      }
+    }
+  }
+  else if (strcmp(line, "input") == 0)
+  {
+    char *Charvalue;
+    printf("Please Enter a Value: ");
+    scanf("%s", Charvalue);
+    return Charvalue;
+  }
+  else
+  {
+    return (char *) "INCORRECT";
+  }
+}
+
+
+
+
+
+
+
+int Parse(PCB *CurrentProcess)
+{
+  
+  char *MemLine = (memory[CurrentProcess->programCounter]).value;
+  if (MemLine==NULL)
+  printf("IT IS NULLLL");
+  char* line = strdup(MemLine);
+  line = strtok(line," ");
 
   if (strcmp(line, "print") == 0)
   {
     line = strtok(NULL, " ");
-    printf("%s", line);
+    printf("%s\n", line);
+    return 0;
   }
 
   else
@@ -146,9 +218,10 @@ void Parse(char *line, PCB *CurrentProcess)
 
       char *charValue;
       long intValue;
+      for(int i=6;i<9;i++)
+      printf("wowowowow:%d:%s wowowow\n",i,memory[i].value);
       line = strtok(NULL, " ");
       char *variableName = line;     // we saved the name of the variable they used
-      printf("%s \n", variableName); //
       line = strtok(NULL, " ");
 
       charValue = readFile(line, CurrentProcess);
@@ -157,6 +230,7 @@ void Parse(char *line, PCB *CurrentProcess)
       {
         if (memory[CurrentProcess->memStart + 6 + i].name == NULL && memory[CurrentProcess->memStart + 6 + i].value == NULL)
         {
+          printf("insideloop\n");
           Memory_Word memoryWord;
           memoryWord.name = variableName;
           memoryWord.value = charValue;
@@ -164,6 +238,7 @@ void Parse(char *line, PCB *CurrentProcess)
           break;
         }
       }
+      return 0;
     }
     else
     {
@@ -182,6 +257,7 @@ void Parse(char *line, PCB *CurrentProcess)
             break;
           }
         }
+        return 0;
       }
       else
       {
@@ -207,6 +283,7 @@ void Parse(char *line, PCB *CurrentProcess)
               printf("%d", i);
             }
           }
+          return 0;
         }
 
         else
@@ -214,29 +291,55 @@ void Parse(char *line, PCB *CurrentProcess)
           if (strcmp(line, "semWait") == 0)
           {
             line = strtok(NULL, " ");
-            if (line = "userInput")
-              InputMutexAcquire();
-            if (line = "userOutput")
-              OutputMutexAcquire();
-            if (line = "file")
-              FileMutexAcquire();
-          }
+            if (strcmp(line,"userInput")){
+            if(!InputMutexAcquire())
+              return 2;
+            }
 
+          else { if (strcmp(line,"userOutput")){
+              if(!OutputMutexAcquire())
+              return 3;
+          }
+            else{ if (strcmp(line,"file")){
+              if(!FileMutexAcquire())
+              return 1;
+
+            }
+            else{
+              return 0;
+            }
+          }
+          }
+        }
           else
           {
             if (strcmp(line, "semSignal") == 0)
             {
               line = strtok(NULL, " ");
-              if (line = "userInput")
+              if (strcmp(line,"userInput")){
                 InputMutexRelease();
-              if (line = "userOutput")
+                return -2;
+              }
+              
+              else {if (strcmp(line,"userOutput")){
                 OutputMutexRelease();
-              if (line = "file")
+                return -3;
+              }
+
+              else{ if (strcmp(line,"file")){
                 FileMutexRelease();
+                return -1; 
+              }
+              else{
+                return 0;
+              }
             }
+          }
+        }
             else
             {
               printf("Error: Instruction Not Recognized\n");
+              return 0;
             }
           }
         }
@@ -245,59 +348,54 @@ void Parse(char *line, PCB *CurrentProcess)
   }
 }
 
-char *readFile(char *line, PCB *currentProcess)
-{
-  if (strcmp(line, "readFile") == 0)
-  {
-    line = strtok(NULL, " ");
-    for (long i = currentProcess->memStart; i < currentProcess->memEnd; i++)
-    {
-      if (strcmp(line, memory[i].name) == 0)
-      {
-        return memory[i].value;
-      }
+////
+//
+//
+//
+//
+
+
+
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+
+
+
+
+
+long countFile(FILE *fptr){
+if (fptr == NULL) return -1;
+
+    int count = 0;
+    int ch;
+
+    rewind(fptr); // Ensure we're at the beginning
+
+    while ((ch = fgetc(fptr)) != EOF) {
+        if (ch == '\n') {
+            count++;
+        }
     }
-  }
-  else if (strcmp(line, "input") == 0)
-  {
-    char *Charvalue;
-    printf("Please Enter a Value: ");
-    scanf("%s", Charvalue);
-    return Charvalue;
-  }
-  else
-  {
-    return line;
-  }
+
+    return count;
 }
 
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 
-long main()
-{
-  char *Line;
-
-  do
-  {
-    Line = GetInstruction();
-    Parse(Line, DummyPCB);
-  } while (Line != NULL)
-}
-
-void createPCB(FILE *fptr, long priority)
+PCB createPCB(FILE *fptr, long priority)
 {
   PCB pcb;
   bool f = true;
@@ -316,57 +414,70 @@ void createPCB(FILE *fptr, long priority)
     {
       long startIndex = start;
       Memory_Word memoryWord;
-      memoryWord.name = "Process ID";
-      memoryWord.value = NumToString(Pid);
+      memoryWord.name = (char*) "Process ID"; 
+      memoryWord.value = (char*)  NumToString(Pid);
+      pcb.processID = Pid;
       Pid++;
+      memory[start++] = memoryWord; 
+
+      memoryWord.name = (char*) "Process State";
+      memoryWord.value = (char*) "Ready";
+      pcb.processState = new State (Ready);
       memory[start++] = memoryWord;
 
-      memoryWord.name = "Process State";
-      memoryWord.value = "Ready";
+      memoryWord.name = (char*) "Current Priority";
+      memoryWord.value = (char*) NumToString(priority);
+      pcb.priority = priority;
       memory[start++] = memoryWord;
 
-      memoryWord.name = "Current Priority";
-      memoryWord.value = NumToString(priority);
+      memoryWord.name = (char*) "Program Counter";
+      memoryWord.value = (char*) NumToString(startIndex + 9); 
+      pcb.programCounter = startIndex + 9;
       memory[start++] = memoryWord;
 
-      memoryWord.name = "Program Counter";
-      memoryWord.value = "0";
+      memoryWord.name = (char*) "Memory Start";
+      memoryWord.value =(char*)  NumToString(startIndex);
+      pcb.memStart = startIndex;
       memory[start++] = memoryWord;
 
-      memoryWord.name = "Memory Start";
-      memoryWord.value = NumToString(startIndex);
-      memory[start++] = memoryWord;
-
-      memoryWord.name = "Memory End";
-      memoryWord.value = NumToString(startIndex + 9 + sz);
+      memoryWord.name = (char*) "Memory End";
+      memoryWord.value = (char*) NumToString(startIndex + 9 + sz);
+      pcb.memEnd = startIndex + 9 + sz;
       memory[start] = memoryWord;
-
       start += 4;
-      memoryWord.name = "Instruction";
-      while (start < startIndex + 9 + sz)
+      
+      int j=1;
+     
+      for(int i=start;i<(startIndex+9+sz);i++)
       {
-        memoryWord.value = GetInstruction(fptr);
-        memory[start] = memoryWord;
-        start++;
+       Memory_Word temp;
+        temp.name = (char*) "Instruction";
+        temp.value =  (GetInstruction(fptr,j));
+        memory[i].name = strdup(temp.name);
+        memory[i].value = strdup(temp.value);
+        j++;
       }
+      return pcb;
     }
   }
 }
-// long processID;
-// State *processState;
-// long priority;
-// long programCounter;
-// long memStart;
-// long memEnd;
 
-long countFile(FILE *fptr)
+
+
+int main()
 {
-  long count = -1;
-  char *Line;
-  do
-  {
-    Line = GetInstruction();
-    count++;
+  rewind(fptr1);
+  PCB pcb1= createPCB(fptr1,2);
+  
 
-  } while (Line != NULL);
+  for(int i=0;i<15;i++){
+  Parse(&pcb1);
+  pcb1.programCounter++;
+  }
+
+return 0;
 }
+
+// GetInstruction -(used in)-> Inserting Instructions into Memory -(used in)-> 
+// Whenever Parse is called, we extract instructions from memory
+
