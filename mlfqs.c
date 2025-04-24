@@ -38,10 +38,11 @@ void MLFQStart(MLFQ_Scheduler *scheduler)
     {
         while (scheduler->readyQueue[i]->size)
         {
+            bool exit = false;
             int res = 0;
             while (scheduler->currentlyRunning && scheduler->readyQueue[i]->first->pcb->programCounter != scheduler->readyQueue[i]->first->pcb->memEnd && scheduler->currentQuantum[i] < scheduler->timeQuantum[i])
             {
-                // res = run_line(scheduler->readyQueue->first->pcb)
+                // res = Parse(scheduler->readyQueue->first->pcb)
                 if (res)
                 {
                     if (res > 0)
@@ -54,10 +55,14 @@ void MLFQStart(MLFQ_Scheduler *scheduler)
                     {
                         // should be unblocked
                         MLFQSFree(scheduler, -res);
+                        i = -1;
+                        exit = true;
                     }
                 }
                 scheduler->readyQueue[i]->first->pcb->programCounter++;
                 scheduler->currentQuantum[i]++;
+                if (exit)
+                    break;
             }
             if (!res)
             {
@@ -75,15 +80,21 @@ void MLFQStart(MLFQ_Scheduler *scheduler)
                 if (i == 3)
                 {
                     // 4th, rotate
+                    // MakeReady(scheduler->readyQueue[i]->first->pcb)
                     InsertLast(scheduler->readyQueue[i], RemoveFirst(scheduler->readyQueue[i]));
                 }
                 else if (i != 0 || (scheduler->readyQueue[1]->size + scheduler->readyQueue[2]->size + scheduler->readyQueue[3]->size))
                 {
                     // either not the first, or it is the first but everything else is non empty, so either way push down
+                    // MakeReady(scheduler->readyQueue[i]->first->pcb)
                     PCB pcb = RemoveFirst(scheduler->readyQueue[i]);
                     pcb.priority++;
                     InsertLast(scheduler->readyQueue[i + 1], pcb);
                 }
+            }
+            if (exit)
+            {
+                break;
             }
         }
     }

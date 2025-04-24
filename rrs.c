@@ -63,7 +63,7 @@ void RRSStart(RR_Scheduler *scheduler)
         int res = 0;
         while (scheduler->readyQueue->size && scheduler->currentlyRunning && scheduler->readyQueue->first->pcb->programCounter != scheduler->readyQueue->first->pcb->memEnd && scheduler->currentQuantum < scheduler->timeQuantum)
         {
-            // res = run_line(scheduler->readyQueue->first->pcb);
+            // res = Parse(scheduler->readyQueue->first->pcb);
             if (res > 0)
             {
                 // blocked
@@ -91,8 +91,9 @@ void RRSStart(RR_Scheduler *scheduler)
         if (!scheduler->readyQueue->size)
             return;
 
-        // not finished, rotate
+        // not finished, rotate and make it ready
         InsertLast(scheduler->readyQueue, RemoveFirst(scheduler->readyQueue));
+        // MakeReady(scheduler->readyQueue->first->pcb)
     }
     return;
 }

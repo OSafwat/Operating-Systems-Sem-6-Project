@@ -24,7 +24,7 @@ void FCFSStep(FCFS_Scheduler *scheduler)
 {
     if (!scheduler->readyQueue->size || !scheduler->currentlyRunning)
         return;
-    int res = 0; // run_line(scheduler->readyQueue->first->pcb)
+    int res = 0; // Parse(scheduler->readyQueue->first->pcb)
     scheduler->readyQueue->first->pcb->programCounter++;
     if (scheduler->readyQueue->first->pcb->programCounter == scheduler->readyQueue->first->pcb->memEnd)
     {
@@ -36,17 +36,19 @@ void FCFSStart(FCFS_Scheduler *scheduler)
 {
     if (!scheduler->readyQueue->size || !scheduler->currentlyRunning)
         return;
-
-    while (scheduler->currentlyRunning && scheduler->readyQueue->first->pcb->programCounter != scheduler->readyQueue->first->pcb->memEnd)
+    while (scheduler->readyQueue->size)
     {
-        // run_line(scheduler->readyQueue->first->pcb)
-        scheduler->readyQueue->first->pcb->programCounter++;
-    }
+        while (scheduler->currentlyRunning && scheduler->readyQueue->first->pcb->programCounter != scheduler->readyQueue->first->pcb->memEnd)
+        {
+            // Parse(scheduler->readyQueue->first->pcb)
+            scheduler->readyQueue->first->pcb->programCounter++;
+        }
 
-    if (scheduler->readyQueue->first->pcb->programCounter == scheduler->readyQueue->first->pcb->memEnd)
-    {
-        // finished
-        FCFSRemoveTask(scheduler);
+        if (scheduler->readyQueue->first->pcb->programCounter == scheduler->readyQueue->first->pcb->memEnd)
+        {
+            // finished
+            FCFSRemoveTask(scheduler);
+        }
     }
     return;
 }
