@@ -120,5 +120,6 @@ void Free(MLFQ_Scheduler *scheduler, int resourceIndex)
     if (!scheduler->blockedQueue[resourceIndex]->size)
         return;
     PCB pcb = RemoveFirst(scheduler->blockedQueue[resourceIndex]);
+    makeReady(pcb);
     InsertLast(scheduler->readyQueue[pcb.priority], pcb);
 }
