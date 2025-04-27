@@ -455,7 +455,9 @@ PCB createPCB(FILE *fptr, long priority)
 
 int main()
 {
-    FILE *fptr1 = fopen("Program_2.txt", "r");
+    FILE *fptr1 = fopen("Program_1.txt", "r");
+    FILE *fptr2 = fopen("Program_2.txt", "r");
+    FILE *fptr3 = fopen("Program_3.txt", "r");
     if (fptr1 == NULL)
     {
         printf("Error: Could not open Program_1.txt\n");
@@ -463,6 +465,9 @@ int main()
     }
 
     PCB pcb1 = createPCB(fptr1, 2);
+    PCB pcb2 = createPCB(fptr2, 2);
+    PCB pcb3 = createPCB(fptr3, 2);
+
     // for(int i=6;i<15;i++)
     // printf("Instruction at MEM %d : %s \n",i,memory[i].value);      //Instructions ARE being inserted properly
 
@@ -474,6 +479,7 @@ int main()
     fclose(fptr1);
     for (int i = 6; i < 9; i++)
         printf("Instruction at MEM %d : %s \n", i, memory[i].value);
+
     return 0;
 }
 
