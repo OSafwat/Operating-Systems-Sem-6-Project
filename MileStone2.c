@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include "PCB.h"
+#include "fcfs.h"
 
 typedef struct
 {
@@ -239,7 +240,7 @@ int Parse(PCB *CurrentProcess)
 
         for (long i = 0; i < 3; i++)
         {
-            if (memory[CurrentProcess->memStart + 6 + i].name == source)
+            if (strcmp(memory[CurrentProcess->memStart + 6 + i].name, source) == 0)
             {
                 data = memory[CurrentProcess->memStart + 6 + i].value;
                 break;
@@ -247,7 +248,7 @@ int Parse(PCB *CurrentProcess)
         }
         for (int i = 0; i < 3; i++)
         {
-            if (memory[CurrentProcess->memEnd + 6 + i].name == destination)
+            if (strcmp(memory[CurrentProcess->memStart + 6 + i].name, destination) == 0)
             {
                 memory[CurrentProcess->memStart + 6 + i].value = data;
                 break;
@@ -301,26 +302,16 @@ int Parse(PCB *CurrentProcess)
             if (!InputMutexAcquire())
                 return 2;
         }
-
         else
         {
-            if (strcmp(line, "userOutput") == 0)
+            if (strcmp(line, "file") == 0)
             {
-                if (!OutputMutexAcquire())
-                    return 3;
+                if (!FileMutexAcquire())
+                    return 1;
                 return 0;
             }
-            else
-            {
-                if (strcmp(line, "file") == 0)
-                {
-                    if (!FileMutexAcquire())
-                        return 1;
-                    return 0;
-                }
 
-                return 0;
-            }
+            return 0;
         }
     }
     if (strcmp(line, "semSignal") == 0)

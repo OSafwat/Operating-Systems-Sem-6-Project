@@ -40,7 +40,7 @@ void FCFSStart(FCFS_Scheduler *scheduler)
     {
         while (scheduler->currentlyRunning && scheduler->readyQueue->first->pcb->programCounter != scheduler->readyQueue->first->pcb->memEnd)
         {
-            // Parse(scheduler->readyQueue->first->pcb)
+            Parse(scheduler->readyQueue->first->pcb);
             scheduler->readyQueue->first->pcb->programCounter++;
         }
 
