@@ -26,7 +26,8 @@
     "typeindex": "cpp",
     "typeinfo": "cpp",
     "mlfqs.h": "c",
-    "tempCodeRunnerFile.C": "cpp"
+    "tempCodeRunnerFile.C": "cpp",
+    "stdbool.h": "c"
   },
   "C_Cpp.errorSquiggles": "enabled",
   "C_Cpp_Runner.cCompilerPath": "gcc",

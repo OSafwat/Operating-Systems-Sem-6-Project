@@ -1,11 +1,3 @@
-semWait userInput
 assign a input
 assign b input
-print test_ballabizo-------------------------------------------------------------------------------
-semSignal userInput
-print test_ballabizo-------------------------------------------------------------------------------
-semWait userOutput
-print test_ballabizo-------------------------------------------------------------------------------
 printFromTo a b
-print test_ballabizo-------------------------------------------------------------------------------
-semSignal userOutput
