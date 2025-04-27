@@ -1,7 +1,7 @@
 #ifndef RRS_H
 #define RRS_H
 
-#include "Queue.h"
+#include "queue.h"
 #include <stdio.h>
 #include <stdbool.h>
 
@@ -14,6 +14,9 @@ typedef struct
     bool currentlyRunning;
 } RR_Scheduler;
 
+int Parse(PCB *CurrentProcess);
+void MakeReady(PCB *pcb);
+
 RR_Scheduler *RRSCreate(int timeQuantum);
 
 void RRSInsertTask(RR_Scheduler *scheduler, PCB pcb);
@@ -22,10 +25,12 @@ void RRSRemoveTask(RR_Scheduler *scheduler);
 
 void RRSStart(RR_Scheduler *scheduler);
 
-void RRSEnd(RR_Scheduler *scheduler);
+void RRSStop(RR_Scheduler *scheduler);
 
-void RRSBlock(RR_Scheduler *scheduler);
+void RRSBlock(RR_Scheduler *scheduler, int resourceIndex);
 
 void RRSStep(RR_Scheduler *scheduler);
+
+void RRSFree(RR_Scheduler *scheduler, int resourceIndex);
 
 #endif

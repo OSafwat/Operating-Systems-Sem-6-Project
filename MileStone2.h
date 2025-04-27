@@ -1,5 +1,5 @@
-#ifndef MileStone2.h
-#define MileStone2 .h
+#ifndef MileStone2_H
+#define MileStone2_H
 #include "PCB.h"
 
 char *readFile(char *line, PCB *currentProcess);

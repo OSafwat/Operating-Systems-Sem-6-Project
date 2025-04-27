@@ -1,16 +1,18 @@
 #ifndef FCFS_H
 #define FCFS_H
 
-#include "Queue.h"
+#include "queue.h"
+#include "PCB.h"
 #include <stdio.h>
 #include <stdbool.h>
-#include "MileStone2.h"
 
 typedef struct
 {
     Queue *readyQueue;
     bool currentlyRunning;
 } FCFS_Scheduler;
+
+int Parse(PCB *CurrentProcess);
 
 FCFS_Scheduler *FCFSCreate(void);
 

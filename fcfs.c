@@ -1,12 +1,13 @@
 #include "fcfs.h"
-#include "Queue.h"
+#include "queue.h"
+#include <stdlib.h>
 // #include "whateverFileWillContainTheCommands"
 
 FCFS_Scheduler *FCFSCreate()
 {
     FCFS_Scheduler *s = malloc(sizeof(FCFS_Scheduler));
     s->readyQueue = CreateQueue();
-    s->currentlyRunning = false;
+    s->currentlyRunning = true;
     return s;
 }
 
@@ -34,7 +35,7 @@ void FCFSStep(FCFS_Scheduler *scheduler)
 
 void FCFSStart(FCFS_Scheduler *scheduler)
 {
-    if (!scheduler->readyQueue->size || !scheduler->currentlyRunning)
+    if ((scheduler->readyQueue->size == 0) || !scheduler->currentlyRunning)
         return;
     while (scheduler->readyQueue->size)
     {

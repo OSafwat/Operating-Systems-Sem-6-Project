@@ -27,7 +27,9 @@
     "typeinfo": "cpp",
     "mlfqs.h": "c",
     "tempCodeRunnerFile.C": "cpp",
-    "stdbool.h": "c"
+    "stdbool.h": "c",
+    "fcfs.h": "c",
+    "rrs.h": "c"
   },
   "C_Cpp.errorSquiggles": "enabled",
   "C_Cpp_Runner.cCompilerPath": "gcc",

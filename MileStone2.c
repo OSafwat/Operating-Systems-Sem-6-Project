@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include "PCB.h"
 #include "fcfs.h"
+#include "queue.h"
+#include "rrs.h"
 
 typedef struct
 {
@@ -95,7 +97,7 @@ char *GetInstruction(FILE *file, int line_number)
 //
 //
 
-void makeReady(PCB *pcb)
+void MakeReady(PCB *pcb)
 {
     memory[(pcb->memStart + 1)].value = (char *)"Ready";
 }
@@ -116,8 +118,8 @@ bool FileMutexAcquire()
 {
     if (!fileKey)
         return false;
-    else
-        return true;
+    fileKey = false;
+    return true;
 }
 
 void FileMutexRelease()
@@ -129,8 +131,8 @@ bool InputMutexAcquire()
 {
     if (!inputKey)
         return false;
-    else
-        return true;
+    inputKey = false;
+    return true;
 }
 void InputMutexRelease()
 {
@@ -141,8 +143,8 @@ bool OutputMutexAcquire()
 {
     if (!outputKey)
         return false;
-    else
-        return true;
+    return true;
+    outputKey = false;
 }
 
 void OutputMutexRelease()
@@ -198,7 +200,14 @@ int Parse(PCB *CurrentProcess)
     if (strcmp(line, "print") == 0)
     {
         line = strtok(NULL, " \n");
-        printf("%s\n", line);
+        for (long i = 0; i < 3; i++)
+        {
+            if (strcmp(memory[CurrentProcess->memStart + 6 + i].name, line) == 0)
+            {
+                printf("%s", memory[CurrentProcess->memStart + 6 + i].value);
+                break;
+            }
+        }
         return 0;
     }
     if (strcmp(line, "assign") == 0)
@@ -211,7 +220,6 @@ int Parse(PCB *CurrentProcess)
         char *variableName = line; // we saved the name of the variable they used
         line = strtok(NULL, " \n");
 
-        printf("%s", line);
         charValue = readFile(line, CurrentProcess);
 
         for (long i = 0; i < 3; i++)
@@ -301,6 +309,7 @@ int Parse(PCB *CurrentProcess)
         {
             if (!InputMutexAcquire())
                 return 2;
+            return 0;
         }
         else
         {
@@ -388,6 +397,10 @@ PCB createPCB(FILE *fptr, long priority)
     }
     for (int i = 0; i < 60; i++)
     {
+        if (memory[i].name != NULL)
+            continue;
+        if (memory[i].name == NULL && (memory[i + 3].name != NULL || memory[i + 2].name != NULL || memory[i + 1].name != NULL))
+            continue;
         count = 0;
         start = i;
         sz = countFile(fptr);
@@ -429,20 +442,20 @@ PCB createPCB(FILE *fptr, long priority)
             memory[start++] = memoryWord;
 
             memoryWord.name = (char *)"Memory End";
-            memoryWord.value = (char *)NumToString(startIndex + 9 + sz);
-            pcb.memEnd = startIndex + 9 + sz;
+            memoryWord.value = (char *)NumToString(i - 1);
+            pcb.memEnd = i - 1;
             memory[start] = memoryWord;
             start += 4;
 
             int j = 1;
 
-            for (int i = start; i < (startIndex + 9 + sz); i++)
+            for (int k = start; k < (i); k++)
             {
                 Memory_Word temp;
                 temp.name = (char *)"Instruction";
                 temp.value = (GetInstruction(fptr, j));
-                memory[i].name = strdup(temp.name);
-                memory[i].value = strdup(temp.value);
+                memory[k].name = strdup(temp.name);
+                memory[k].value = strdup(temp.value);
                 j++;
             }
             return pcb;
@@ -452,6 +465,63 @@ PCB createPCB(FILE *fptr, long priority)
     pcb.processID = -1;
     return pcb;
 }
+
+// FCFS_Scheduler *FCFSCreate()
+// {
+//     FCFS_Scheduler *s = malloc(sizeof(FCFS_Scheduler));
+//     s->readyQueue = CreateQueue();
+//     s->currentlyRunning = true;
+//     return s;
+// }
+
+// void FCFSInsertTask(FCFS_Scheduler *scheduler, PCB pcb)
+// {
+//     InsertLast(scheduler->readyQueue, pcb);
+// }
+
+// void FCFSRemoveTask(FCFS_Scheduler *scheduler)
+// {
+//     RemoveFirst(scheduler->readyQueue);
+// }
+
+// void FCFSStep(FCFS_Scheduler *scheduler)
+// {
+//     if (!scheduler->readyQueue->size || !scheduler->currentlyRunning)
+//         return;
+//     int res = Parse(scheduler->readyQueue->first->pcb);
+//     scheduler->readyQueue->first->pcb->programCounter++;
+//     if (scheduler->readyQueue->first->pcb->programCounter == scheduler->readyQueue->first->pcb->memEnd)
+//     {
+//         FCFSRemoveTask(scheduler);
+//     }
+// }
+
+// void FCFSStart(FCFS_Scheduler *scheduler)
+// {
+//     if ((scheduler->readyQueue->size == 0) || !scheduler->currentlyRunning)
+//         return;
+//     while (scheduler->readyQueue->size)
+//     {
+//         while (scheduler->currentlyRunning && scheduler->readyQueue->first->pcb->programCounter != scheduler->readyQueue->first->pcb->memEnd)
+//         {
+//             Parse(scheduler->readyQueue->first->pcb);
+//             scheduler->readyQueue->first->pcb->programCounter++;
+//         }
+
+//         if (scheduler->readyQueue->first->pcb->programCounter == scheduler->readyQueue->first->pcb->memEnd)
+//         {
+//             // finished
+//             FCFSRemoveTask(scheduler);
+//         }
+//     }
+//     return;
+// }
+
+// void FCFSStop(FCFS_Scheduler *scheduler)
+// {
+//     scheduler->currentlyRunning = false;
+//     return;
+// }
 
 int main()
 {
@@ -468,26 +538,26 @@ int main()
     PCB pcb2 = createPCB(fptr2, 2);
     PCB pcb3 = createPCB(fptr3, 2);
 
-    FCFS_Scheduler *fcfs;
-    fcfs = FCFSCreate();
+    RR_Scheduler *fcfs;
+    fcfs = RRSCreate(3);
 
-    FCFSInsertTask(fcfs, pcb1);
-    FCFSInsertTask(fcfs, pcb2);
-    FCFSInsertTask(fcfs, pcb3);
+    RRSInsertTask(fcfs, pcb1);
+    RRSInsertTask(fcfs, pcb2);
+    RRSInsertTask(fcfs, pcb3);
 
-    FCFSStart(fcfs);
+    RRSStart(fcfs);
 
-    // for(int i=6;i<15;i++)
-    // printf("Instruction at MEM %d : %s \n",i,memory[i].value);      //Instructions ARE being inserted properly
+    // for (int i = 6; i < 15; i++)
+    //     printf("Instruction at MEM %d : %s \n", i, memory[i].value); // Instructions ARE being inserted properly
 
-    for (int i = 0; i < 15; i++)
-    {
-        Parse(&pcb1);
-        (&pcb1)->programCounter++;
-    }
-    fclose(fptr1);
-    for (int i = 6; i < 9; i++)
-        printf("Instruction at MEM %d : %s \n", i, memory[i].value);
+    // for (int i = 0; i < 15; i++)
+    // {
+    //     Parse(&pcb1);
+    //     (&pcb1)->programCounter++;
+    // }
+    // fclose(fptr1);
+    // for (int i = 6; i < 9; i++)
+    //     printf("Instruction at MEM %d : %s \n", i, memory[i].value);
 
     return 0;
 }
