@@ -143,8 +143,8 @@ bool OutputMutexAcquire()
 {
     if (!outputKey)
         return false;
-    return true;
     outputKey = false;
+    return true;
 }
 
 void OutputMutexRelease()
@@ -305,7 +305,8 @@ int Parse(PCB *CurrentProcess)
     }
     if (strcmp(line, "semWait") == 0)
     {
-        if (strcmp(line, "userInput"))
+        line = strtok(NULL, " \n");
+        if (strcmp(line, "userInput") == 0)
         {
             if (!InputMutexAcquire())
                 return 2;
@@ -313,14 +314,21 @@ int Parse(PCB *CurrentProcess)
         }
         else
         {
-            if (strcmp(line, "file") == 0)
+            if (strcmp(line, "userOutput") == 0)
             {
-                if (!FileMutexAcquire())
-                    return 1;
+                if (!OutputMutexAcquire())
+                    return 3;
                 return 0;
             }
-
-            return 0;
+            else
+            {
+                if (strcmp(line, "file") == 0)
+                {
+                    if (!FileMutexAcquire())
+                        return 1;
+                    return 0;
+                }
+            }
         }
     }
     if (strcmp(line, "semSignal") == 0)
