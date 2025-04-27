@@ -468,6 +468,15 @@ int main()
     PCB pcb2 = createPCB(fptr2, 2);
     PCB pcb3 = createPCB(fptr3, 2);
 
+    FCFS_Scheduler *fcfs;
+    fcfs = FCFSCreate();
+
+    FCFSInsertTask(fcfs, pcb1);
+    FCFSInsertTask(fcfs, pcb2);
+    FCFSInsertTask(fcfs, pcb3);
+
+    FCFSStart(fcfs);
+
     // for(int i=6;i<15;i++)
     // printf("Instruction at MEM %d : %s \n",i,memory[i].value);      //Instructions ARE being inserted properly
 
