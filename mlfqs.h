@@ -14,6 +14,10 @@ typedef struct
     bool currentlyRunning;
 } MLFQ_Scheduler;
 
+void SetPriority(PCB *pcb, int priority);
+int Parse(PCB *CurrentProcess);
+void MakeReady(PCB *pcb);
+
 MLFQ_Scheduler *MLFQSSCreate();
 
 void MLFQSInsertTask(MLFQ_Scheduler *scheduler, PCB pcb);

@@ -13,6 +13,7 @@ MLFQ_Scheduler *MLFQSCreate()
         s->timeQuantum[i] = (1 << i);
         s->currentQuantum[i] = 0;
     }
+    s->currentlyRunning = true;
     return s;
 }
 
@@ -40,24 +41,20 @@ void MLFQStart(MLFQ_Scheduler *scheduler)
         {
             bool exit = false;
             int res = 0;
-            while (scheduler->currentlyRunning && scheduler->readyQueue[i]->first->pcb->programCounter != scheduler->readyQueue[i]->first->pcb->memEnd && scheduler->currentQuantum[i] < scheduler->timeQuantum[i])
+            while (scheduler->currentlyRunning && scheduler->readyQueue[i]->first->pcb->programCounter != scheduler->readyQueue[i]->first->pcb->memEnd + 1 && scheduler->currentQuantum[i] < scheduler->timeQuantum[i])
             {
-                // res = Parse(scheduler->readyQueue->first->pcb)
-                if (res)
+                res = Parse(scheduler->readyQueue[i]->first->pcb);
+                if (res > 0)
                 {
-                    if (res > 0)
-                    {
-                        // should be blocked
-                        MLFQSBlock(scheduler, res, i);
-                        break;
-                    }
-                    else
-                    {
-                        // should be unblocked
-                        MLFQSFree(scheduler, -res);
-                        i = -1;
-                        exit = true;
-                    }
+                    // should be blocked
+                    MLFQSBlock(scheduler, res, i);
+                    break;
+                }
+                if (res < 0)
+                {
+                    // should be unblocked
+                    MLFQSFree(scheduler, -res);
+                    exit = true;
                 }
                 scheduler->readyQueue[i]->first->pcb->programCounter++;
                 scheduler->currentQuantum[i]++;
@@ -69,7 +66,7 @@ void MLFQStart(MLFQ_Scheduler *scheduler)
                 // blocked, so whatever is currently in the queue (if it is not empty) should just be started
                 continue;
             }
-            if (scheduler->readyQueue[i]->first->pcb->programCounter == scheduler->readyQueue[i]->first->pcb->memEnd)
+            if (scheduler->readyQueue[i]->first->pcb->programCounter == scheduler->readyQueue[i]->first->pcb->memEnd + 1)
             {
                 // done, remove
                 MLFQSRemoveTask(scheduler, i);
@@ -94,6 +91,7 @@ void MLFQStart(MLFQ_Scheduler *scheduler)
             }
             if (exit)
             {
+                i = -1;
                 break;
             }
         }
@@ -110,6 +108,7 @@ void MLFQSBlock(MLFQ_Scheduler *scheduler, int resourceIndex, int taskIndex)
 {
     resourceIndex--;
     PCB pcb = RemoveFirst(scheduler->readyQueue[taskIndex]->first);
+    SetPriority(&pcb, taskIndex);
     PriorityInsert(scheduler->blockedQueue[resourceIndex], pcb);
 }
 
@@ -120,6 +119,6 @@ void Free(MLFQ_Scheduler *scheduler, int resourceIndex)
     if (!scheduler->blockedQueue[resourceIndex]->size)
         return;
     PCB pcb = RemoveFirst(scheduler->blockedQueue[resourceIndex]);
-    makeReady(pcb);
+    MakeReady(&pcb);
     InsertLast(scheduler->readyQueue[pcb.priority], pcb);
 }

@@ -39,13 +39,13 @@ void FCFSStart(FCFS_Scheduler *scheduler)
         return;
     while (scheduler->readyQueue->size)
     {
-        while (scheduler->currentlyRunning && scheduler->readyQueue->first->pcb->programCounter != scheduler->readyQueue->first->pcb->memEnd)
+        while (scheduler->currentlyRunning && scheduler->readyQueue->first->pcb->programCounter != scheduler->readyQueue->first->pcb->memEnd + 1)
         {
             Parse(scheduler->readyQueue->first->pcb);
             scheduler->readyQueue->first->pcb->programCounter++;
         }
 
-        if (scheduler->readyQueue->first->pcb->programCounter == scheduler->readyQueue->first->pcb->memEnd)
+        if (scheduler->readyQueue->first->pcb->programCounter == scheduler->readyQueue->first->pcb->memEnd + 1)
         {
             // finished
             FCFSRemoveTask(scheduler);

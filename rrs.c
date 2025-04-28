@@ -122,5 +122,6 @@ void RRSFree(RR_Scheduler *scheduler, int resourceIndex)
     if (!scheduler->blockedQueue[resourceIndex]->size)
         return;
     PCB pcb = RemoveFirst(scheduler->blockedQueue[resourceIndex]);
+    MakeReady(&pcb);
     InsertLast(scheduler->readyQueue, pcb);
 }
