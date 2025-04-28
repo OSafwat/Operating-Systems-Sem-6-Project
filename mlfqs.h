@@ -1,7 +1,8 @@
 #ifndef MLFQS_H
 #define MLFQS_H
 
-#include "Queue.h"
+#include "queue.h"
+#include "PCB.h"
 #include <stdio.h>
 #include <stdbool.h>
 
@@ -12,24 +13,26 @@ typedef struct
     int timeQuantum[4];
     int currentQuantum[4];
     bool currentlyRunning;
-} MLFQ_Scheduler;
+} MLFQS_Scheduler;
 
 void SetPriority(PCB *pcb, int priority);
 int Parse(PCB *CurrentProcess);
 void MakeReady(PCB *pcb);
 
-MLFQ_Scheduler *MLFQSSCreate();
+MLFQS_Scheduler *MLFQSCreate();
 
-void MLFQSInsertTask(MLFQ_Scheduler *scheduler, PCB pcb);
+void MLFQSInsertTask(MLFQS_Scheduler *scheduler, PCB pcb);
 
-void MLFQSRemoveTask(MLFQ_Scheduler *scheduler, int index);
+void MLFQSRemoveTask(MLFQS_Scheduler *scheduler, int index);
 
-void MLFQSStart(MLFQ_Scheduler *scheduler);
+void MLFQSStart(MLFQS_Scheduler *scheduler);
 
-void MLFQSSEnd(MLFQ_Scheduler *scheduler);
+void MLFQSEnd(MLFQS_Scheduler *scheduler);
 
-void MLFQSSBlock(MLFQ_Scheduler *scheduler);
+void MLFQSBlock(MLFQS_Scheduler *scheduler, int resourceIndex, int taskIndex);
 
-void MLFQSFree(MLFQ_Scheduler *scheduler, int index);
+void MLFQSFree(MLFQS_Scheduler *scheduler, int index);
+
+void MLFQSStop(MLFQS_Scheduler *scheduler);
 
 #endif

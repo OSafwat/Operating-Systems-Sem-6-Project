@@ -6,6 +6,7 @@
 #include "fcfs.h"
 #include "queue.h"
 #include "rrs.h"
+#include "mlfqs.h"
 
 typedef struct
 {
@@ -100,11 +101,25 @@ char *GetInstruction(FILE *file, int line_number)
 void MakeReady(PCB *pcb)
 {
     memory[(pcb->memStart + 1)].value = (char *)"Ready";
+    pcb->processState = (State *)Ready;
+}
+
+void MakeRunning(PCB *pcb)
+{
+    memory[(pcb->memStart + 1)].value = (char *)"Running";
+    pcb->processState = (State *)Running;
+}
+
+void MakeBlocked(PCB *pcb)
+{
+    memory[(pcb->memStart + 1)].value = (char *)"Blocked";
+    pcb->processState = (State *)Blocked;
 }
 
 void SetPriority(PCB *pcb, int priority)
 {
     memory[(pcb->memStart + 1)].value = NumToString(priority);
+    pcb->priority = priority;
 }
 
 //
@@ -165,7 +180,7 @@ void OutputMutexRelease()
 //
 //
 
-char *readFile(char *line, PCB *currentProcess)
+char *ReadFile(char *line, PCB *currentProcess)
 {
     if (strcmp(line, "readFile") == 0)
     {
@@ -188,11 +203,11 @@ char *readFile(char *line, PCB *currentProcess)
     return (char *)"INCORRECT";
 }
 
-int Parse(PCB *CurrentProcess)
+int Parse(PCB *currentProcess)
 {
-    CurrentProcess->processState = (State *)malloc(sizeof(State));
-    *CurrentProcess->processState = Running;
-    char *MemLine = (memory[CurrentProcess->programCounter]).value;
+    currentProcess->processState = (State *)malloc(sizeof(State));
+    MakeRunning(currentProcess);
+    char *MemLine = (memory[currentProcess->programCounter]).value;
     if (MemLine == NULL)
     {
         return 404;
@@ -207,9 +222,9 @@ int Parse(PCB *CurrentProcess)
         line = strtok(NULL, " \n");
         for (long i = 0; i < 3; i++)
         {
-            if (strcmp(memory[CurrentProcess->memStart + 6 + i].name, line) == 0)
+            if (strcmp(memory[currentProcess->memStart + 6 + i].name, line) == 0)
             {
-                printf("%s", memory[CurrentProcess->memStart + 6 + i].value);
+                printf("%s", memory[currentProcess->memStart + 6 + i].value);
                 break;
             }
         }
@@ -225,16 +240,16 @@ int Parse(PCB *CurrentProcess)
         char *variableName = line; // we saved the name of the variable they used
         line = strtok(NULL, " \n");
 
-        charValue = readFile(line, CurrentProcess);
+        charValue = ReadFile(line, currentProcess);
 
         for (long i = 0; i < 3; i++)
         {
-            if (memory[CurrentProcess->memStart + 6 + i].name == NULL && memory[CurrentProcess->memStart + 6 + i].value == NULL)
+            if (memory[currentProcess->memStart + 6 + i].name == NULL && memory[currentProcess->memStart + 6 + i].value == NULL)
             {
                 Memory_Word memoryWord;
                 memoryWord.name = variableName;
                 memoryWord.value = charValue;
-                memory[CurrentProcess->memStart + 6 + i] = memoryWord;
+                memory[currentProcess->memStart + 6 + i] = memoryWord;
                 break;
             }
         }
@@ -253,17 +268,17 @@ int Parse(PCB *CurrentProcess)
 
         for (long i = 0; i < 3; i++)
         {
-            if (strcmp(memory[CurrentProcess->memStart + 6 + i].name, source) == 0)
+            if (strcmp(memory[currentProcess->memStart + 6 + i].name, source) == 0)
             {
-                data = memory[CurrentProcess->memStart + 6 + i].value;
+                data = memory[currentProcess->memStart + 6 + i].value;
                 break;
             }
         }
         for (int i = 0; i < 3; i++)
         {
-            if (strcmp(memory[CurrentProcess->memStart + 6 + i].name, destination) == 0)
+            if (strcmp(memory[currentProcess->memStart + 6 + i].name, destination) == 0)
             {
-                memory[CurrentProcess->memStart + 6 + i].value = data;
+                memory[currentProcess->memStart + 6 + i].value = data;
                 break;
             }
         }
@@ -283,7 +298,7 @@ int Parse(PCB *CurrentProcess)
         line = strtok(NULL, " \n");
         char *v2 = strdup(line);
 
-        for (long i = CurrentProcess->memStart + 6; i < CurrentProcess->memStart + 9; i++)
+        for (long i = currentProcess->memStart + 6; i < currentProcess->memStart + 9; i++)
         {
             if (memory[i].value == NULL)
                 break;
@@ -313,25 +328,28 @@ int Parse(PCB *CurrentProcess)
         line = strtok(NULL, " \n");
         if (strcmp(line, "userInput") == 0)
         {
-            if (!InputMutexAcquire())
-                return 2;
-            return 0;
+            if (InputMutexAcquire())
+                return 0;
+            MakeBlocked(currentProcess);
+            return 2;
         }
         else
         {
             if (strcmp(line, "userOutput") == 0)
             {
-                if (!OutputMutexAcquire())
-                    return 3;
-                return 0;
+                if (OutputMutexAcquire())
+                    return 0;
+                MakeBlocked(currentProcess);
+                return 3;
             }
             else
             {
                 if (strcmp(line, "file") == 0)
                 {
-                    if (!FileMutexAcquire())
-                        return 1;
-                    return 0;
+                    if (FileMutexAcquire())
+                        return 0;
+                    MakeBlocked(currentProcess);
+                    return 1;
                 }
             }
         }
@@ -385,7 +403,7 @@ int Parse(PCB *CurrentProcess)
 //
 //
 
-long countFile(FILE *fptr)
+long CountFile(FILE *fptr)
 {
     int count = 0;
     char buffer[100];
@@ -396,7 +414,7 @@ long countFile(FILE *fptr)
     return count;
 }
 
-PCB createPCB(FILE *fptr, long priority)
+PCB CreatePCB(FILE *fptr, long priority)
 {
     PCB pcb;
     bool f = true;
@@ -416,7 +434,7 @@ PCB createPCB(FILE *fptr, long priority)
             continue;
         count = 0;
         start = i;
-        sz = countFile(fptr);
+        sz = CountFile(fptr);
         while (i < 60 && count < 9 + sz && memory[i].name == NULL && memory[i].value == NULL)
         {
             i++;
@@ -490,18 +508,18 @@ int main()
         return -1;
     }
 
-    PCB pcb1 = createPCB(fptr1, 2);
-    PCB pcb2 = createPCB(fptr2, 2);
-    PCB pcb3 = createPCB(fptr3, 2);
+    PCB pcb1 = CreatePCB(fptr1, 0);
+    PCB pcb2 = CreatePCB(fptr2, 0);
+    PCB pcb3 = CreatePCB(fptr3, 0);
 
-    FCFS_Scheduler *fcfs;
-    fcfs = FCFSCreate();
+    MLFQS_Scheduler *mlfqs;
+    mlfqs = MLFQSCreate();
 
-    FCFSInsertTask(fcfs, pcb1);
-    FCFSInsertTask(fcfs, pcb2);
-    FCFSInsertTask(fcfs, pcb3);
+    MLFQSInsertTask(mlfqs, pcb1);
+    MLFQSInsertTask(mlfqs, pcb2);
+    MLFQSInsertTask(mlfqs, pcb3);
 
-    FCFSStart(fcfs);
+    MLFQSStart(mlfqs);
 
     // for (int i = 6; i < 15; i++)
     //     printf("Instruction at MEM %d : %s \n", i, memory[i].value); // Instructions ARE being inserted properly

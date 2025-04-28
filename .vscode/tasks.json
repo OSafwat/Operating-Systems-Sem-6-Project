@@ -11,6 +11,7 @@
                 "MileStone2.c",
                 "fcfs.c",
                 "rrs.c",
+                "mlfqs.c",
                 "queue.c",
                 "PCB.c",
                 "-I.",
