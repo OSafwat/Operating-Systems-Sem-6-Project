@@ -18,6 +18,9 @@ typedef struct
 void SetPriority(PCB *pcb, int priority);
 int Parse(PCB *CurrentProcess);
 void MakeReady(PCB *pcb);
+int modifyInputBlocked(int x);
+int modifyOutputBlocked(int x);
+int modifyFileBlocked(int x);
 
 MLFQS_Scheduler *MLFQSCreate();
 

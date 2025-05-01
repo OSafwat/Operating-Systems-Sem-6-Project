@@ -45,12 +45,12 @@ void MLFQSStart(MLFQS_Scheduler *scheduler)
             while (scheduler->currentlyRunning && scheduler->readyQueue[i]->size && scheduler->readyQueue[i]->first->pcb->programCounter != scheduler->readyQueue[i]->first->pcb->memEnd + 1 && scheduler->currentQuantum[i] < scheduler->timeQuantum[i])
             {
                 res = Parse(scheduler->readyQueue[i]->first->pcb);
+                scheduler->readyQueue[i]->first->pcb->programCounter++;
                 if (res > 0)
                 {
                     // should be blocked
                     MLFQSBlock(scheduler, res, i);
                     scheduler->currentQuantum[i] = 0;
-                    continue;
                 }
                 if (res < 0)
                 {
@@ -58,7 +58,6 @@ void MLFQSStart(MLFQS_Scheduler *scheduler)
                     MLFQSFree(scheduler, -res);
                     exit = true;
                 }
-                scheduler->readyQueue[i]->first->pcb->programCounter++;
                 scheduler->currentQuantum[i]++;
                 if (exit)
                     break;
@@ -106,6 +105,12 @@ void MLFQSStop(MLFQS_Scheduler *scheduler)
 
 void MLFQSBlock(MLFQS_Scheduler *scheduler, int resourceIndex, int taskIndex)
 {
+    if (resourceIndex == 1)
+        modifyFileBlocked(1);
+    else if (resourceIndex == 2)
+        modifyInputBlocked(1);
+    else
+        modifyOutputBlocked(1);
     resourceIndex--;
     PCB pcb = RemoveFirst(scheduler->readyQueue[taskIndex]);
     SetPriority(&pcb, taskIndex);
@@ -114,6 +119,12 @@ void MLFQSBlock(MLFQS_Scheduler *scheduler, int resourceIndex, int taskIndex)
 
 void MLFQSFree(MLFQS_Scheduler *scheduler, int resourceIndex)
 {
+    if (resourceIndex == 1)
+        modifyFileBlocked(-1);
+    else if (resourceIndex == 2)
+        modifyInputBlocked(-1);
+    else
+        modifyOutputBlocked(-1);
     // whatever was blocked should be replaced
     resourceIndex--;
     if (!scheduler->blockedQueue[resourceIndex]->size)

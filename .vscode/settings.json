@@ -29,7 +29,8 @@
     "tempCodeRunnerFile.C": "cpp",
     "stdbool.h": "c",
     "fcfs.h": "c",
-    "rrs.h": "c"
+    "rrs.h": "c",
+    "string.h": "c"
   },
   "C_Cpp.errorSquiggles": "enabled",
   "C_Cpp_Runner.cCompilerPath": "gcc",

@@ -66,6 +66,7 @@ void RRSStart(RR_Scheduler *scheduler)
         while (scheduler->readyQueue->size && scheduler->currentlyRunning && scheduler->readyQueue->first->pcb->programCounter != scheduler->readyQueue->first->pcb->memEnd + 1 && scheduler->currentQuantum < scheduler->timeQuantum)
         {
             res = Parse(scheduler->readyQueue->first->pcb);
+            scheduler->readyQueue->first->pcb->programCounter++;
             if (res > 0)
             {
                 // blocked
@@ -80,7 +81,6 @@ void RRSStart(RR_Scheduler *scheduler)
                 RRSFree(scheduler, -res);
                 res = 0;
             }
-            scheduler->readyQueue->first->pcb->programCounter++;
             scheduler->currentQuantum++;
         }
         scheduler->currentQuantum = 0;
@@ -111,6 +111,12 @@ void RRSStop(RR_Scheduler *scheduler)
 
 void RRSBlock(RR_Scheduler *scheduler, int resourceIndex)
 {
+    if (resourceIndex == 1)
+        modifyFileBlocked(1);
+    else if (resourceIndex == 2)
+        modifyInputBlocked(1);
+    else
+        modifyOutputBlocked(1);
     resourceIndex--;
     PCB pcb = RemoveFirst(scheduler->readyQueue);
     InsertLast(scheduler->blockedQueue[resourceIndex], pcb);
@@ -118,6 +124,12 @@ void RRSBlock(RR_Scheduler *scheduler, int resourceIndex)
 
 void RRSFree(RR_Scheduler *scheduler, int resourceIndex)
 {
+    if (resourceIndex == 1)
+        modifyFileBlocked(-1);
+    else if (resourceIndex == 2)
+        modifyInputBlocked(-1);
+    else
+        modifyOutputBlocked(-1);
     resourceIndex--;
     if (!scheduler->blockedQueue[resourceIndex]->size)
         return;

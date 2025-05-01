@@ -16,6 +16,9 @@ typedef struct
 
 int Parse(PCB *CurrentProcess);
 void MakeReady(PCB *pcb);
+int modifyInputBlocked(int x);
+int modifyOutputBlocked(int x);
+int modifyFileBlocked(int x);
 
 RR_Scheduler *RRSCreate(int timeQuantum);
 

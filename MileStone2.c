@@ -8,6 +8,25 @@
 #include "rrs.h"
 #include "mlfqs.h"
 
+int fileBlocked = 0;
+int inputBlocked = 0;
+int outputBlocked = 0;
+
+int modifyInputBlocked(int x)
+{
+    inputBlocked += x;
+}
+
+int modifyOutputBlocked(int x)
+{
+    outputBlocked += x;
+}
+
+int modifyFileBlocked(int x)
+{
+    fileBlocked += x;
+}
+
 typedef struct
 {
     char *name;
@@ -359,7 +378,8 @@ int Parse(PCB *currentProcess)
         line = strtok(NULL, " \n");
         if (strcmp(line, "userInput") == 0)
         {
-            InputMutexRelease();
+            if (inputBlocked == 1)
+                InputMutexRelease();
             return -2;
         }
 
@@ -367,7 +387,8 @@ int Parse(PCB *currentProcess)
         {
             if (strcmp(line, "userOutput") == 0)
             {
-                OutputMutexRelease();
+                if (outputBlocked == 1)
+                    OutputMutexRelease();
                 return -3;
             }
 
@@ -375,7 +396,8 @@ int Parse(PCB *currentProcess)
             {
                 if (strcmp(line, "file") == 0)
                 {
-                    FileMutexRelease();
+                    if (fileBlocked == 1)
+                        FileMutexRelease();
                     return -1;
                 }
                 else
