@@ -29,6 +29,80 @@ void MLFQSRemoveTask(MLFQS_Scheduler *scheduler, int index)
     RemoveFirst(scheduler->readyQueue[index]);
 }
 
+void MLFQSStep(MLFQS_Scheduler *scheduler)
+{
+    bool isEmpty = true;
+    for (int i = 0; i < 4; i++)
+        isEmpty &= !scheduler->readyQueue[i]->size;
+    if (isEmpty || !scheduler->currentlyRunning)
+        return;
+    bool opDone = false;
+    for (int i = 0; i < 4; i++)
+    {
+        while (scheduler->readyQueue[i]->size)
+        {
+            bool exit = false;
+            int res = 0;
+            while (scheduler->currentlyRunning && scheduler->readyQueue[i]->size && scheduler->readyQueue[i]->first->pcb->programCounter != scheduler->readyQueue[i]->first->pcb->memEnd + 1 && scheduler->currentQuantum[i] < scheduler->timeQuantum[i])
+            {
+                opDone = true;
+                res = Parse(scheduler->readyQueue[i]->first->pcb);
+                scheduler->readyQueue[i]->first->pcb->programCounter++;
+                if (res > 0)
+                {
+                    // should be blocked
+                    MLFQSBlock(scheduler, res, i);
+                    scheduler->currentQuantum[i] = 0;
+                }
+                if (res < 0)
+                {
+                    // should be unblocked
+                    MLFQSFree(scheduler, -res);
+                    exit = true;
+                }
+                scheduler->currentQuantum[i]++;
+                if (exit)
+                    break;
+                break;
+            }
+            if (scheduler->readyQueue[i]->size && scheduler->readyQueue[i]->first->pcb->programCounter == scheduler->readyQueue[i]->first->pcb->memEnd + 1)
+            {
+                // done, remove
+                MLFQSRemoveTask(scheduler, i);
+                scheduler->currentQuantum[i] = 0;
+            }
+            else
+            {
+                // not done, rotate if 4th, move down if not 4th AND THE REST IS NOT EMPTY, if it is the only task in the queue, then it remains on top
+                if (i == 3 && scheduler->currentQuantum[i] == scheduler->timeQuantum[i])
+                {
+                    // 4th, rotate
+                    // MakeReady(scheduler->readyQueue[i]->first->pcb)
+                    InsertLast(scheduler->readyQueue[i], RemoveFirst(scheduler->readyQueue[i]));
+                }
+                else if (scheduler->currentQuantum[i] == scheduler->timeQuantum[i] && (i != 0 || ((scheduler->readyQueue[0] + scheduler->readyQueue[1]->size + scheduler->readyQueue[2]->size + scheduler->readyQueue[3]->size) && scheduler->readyQueue[i]->size)))
+                {
+                    // either not the first, or it is the first but everything else is non empty, so either way push down
+                    // MakeReady(scheduler->readyQueue[i]->first->pcb)
+                    PCB pcb = RemoveFirst(scheduler->readyQueue[i]);
+                    pcb.priority++;
+                    InsertLast(scheduler->readyQueue[i + 1], pcb);
+                }
+                if (!exit)
+                    scheduler->currentQuantum[i] = 0;
+            }
+            if (exit)
+            {
+                i = -1;
+                break;
+            }
+            if (opDone)
+                return;
+        }
+    }
+    return;
+}
+
 void MLFQSStart(MLFQS_Scheduler *scheduler)
 {
     bool isEmpty = true;

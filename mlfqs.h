@@ -21,6 +21,7 @@ void MakeReady(PCB *pcb);
 int modifyInputBlocked(int x);
 int modifyOutputBlocked(int x);
 int modifyFileBlocked(int x);
+void MLFQSStep(MLFQS_Scheduler *scheduler);
 
 MLFQS_Scheduler *MLFQSCreate();
 
