@@ -537,18 +537,20 @@ int main()
         return -1;
     }
 
-    // PCB pcb1 = CreatePCB(fptr1, 0);
+    PCB pcb1 = CreatePCB(fptr1, 0);
     PCB pcb2 = CreatePCB(fptr2, 0);
     PCB pcb3 = CreatePCB(fptr3, 0);
 
-    RR_Scheduler *rrs;
-    rrs = RRSCreate(20);
+    MLFQS_Scheduler *mlfqs;
+    mlfqs = MLFQSCreate(20);
 
-    // RRSInsertTask(rrs, pcb1);
-    RRSInsertTask(rrs, pcb2);
-    RRSInsertTask(rrs, pcb3);
+    MLFQSInsertTask(mlfqs, pcb1);
+    MLFQSInsertTask(mlfqs, pcb2);
+    MLFQSInsertTask(mlfqs, pcb3);
 
-    RRSStart(rrs);
+    MLFQSStep(mlfqs);
+    MLFQSStep(mlfqs);
+    MLFQSStep(mlfqs);
 
     // for (int i = 6; i < 15; i++)
     //     printf("Instruction at MEM %d : %s \n", i, memory[i].value); // Instructions ARE being inserted properly

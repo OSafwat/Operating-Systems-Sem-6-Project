@@ -3,6 +3,8 @@
 #include <stdlib.h>
 // #include "whateverFileWillContainTheCommands"
 
+int curr = 0;
+
 MLFQS_Scheduler *MLFQSCreate()
 {
     MLFQS_Scheduler *s = malloc(sizeof(MLFQS_Scheduler));
@@ -37,17 +39,18 @@ void MLFQSStep(MLFQS_Scheduler *scheduler)
     if (isEmpty || !scheduler->currentlyRunning)
         return;
     bool opDone = false;
-    for (int i = 0; i < 4; i++)
+    for (int i = curr; i < 4; i++)
     {
+        curr = i;
         while (scheduler->readyQueue[i]->size)
         {
-            bool exit = false;
             int res = 0;
             while (scheduler->currentlyRunning && scheduler->readyQueue[i]->size && scheduler->readyQueue[i]->first->pcb->programCounter != scheduler->readyQueue[i]->first->pcb->memEnd + 1 && scheduler->currentQuantum[i] < scheduler->timeQuantum[i])
             {
                 opDone = true;
                 res = Parse(scheduler->readyQueue[i]->first->pcb);
                 scheduler->readyQueue[i]->first->pcb->programCounter++;
+                scheduler->currentQuantum[i]++;
                 if (res > 0)
                 {
                     // should be blocked
@@ -58,11 +61,7 @@ void MLFQSStep(MLFQS_Scheduler *scheduler)
                 {
                     // should be unblocked
                     MLFQSFree(scheduler, -res);
-                    exit = true;
                 }
-                scheduler->currentQuantum[i]++;
-                if (exit)
-                    break;
                 break;
             }
             if (scheduler->readyQueue[i]->size && scheduler->readyQueue[i]->first->pcb->programCounter == scheduler->readyQueue[i]->first->pcb->memEnd + 1)
@@ -70,6 +69,7 @@ void MLFQSStep(MLFQS_Scheduler *scheduler)
                 // done, remove
                 MLFQSRemoveTask(scheduler, i);
                 scheduler->currentQuantum[i] = 0;
+                curr = 0;
             }
             else
             {
@@ -79,22 +79,19 @@ void MLFQSStep(MLFQS_Scheduler *scheduler)
                     // 4th, rotate
                     // MakeReady(scheduler->readyQueue[i]->first->pcb)
                     InsertLast(scheduler->readyQueue[i], RemoveFirst(scheduler->readyQueue[i]));
+                    scheduler->currentQuantum[i] = 0;
+                    curr = 0;
                 }
-                else if (scheduler->currentQuantum[i] == scheduler->timeQuantum[i] && (i != 0 || ((scheduler->readyQueue[0] + scheduler->readyQueue[1]->size + scheduler->readyQueue[2]->size + scheduler->readyQueue[3]->size) && scheduler->readyQueue[i]->size)))
+                else if (scheduler->currentQuantum[i] == scheduler->timeQuantum[i])
                 {
-                    // either not the first, or it is the first but everything else is non empty, so either way push down
+                    // push down
                     // MakeReady(scheduler->readyQueue[i]->first->pcb)
                     PCB pcb = RemoveFirst(scheduler->readyQueue[i]);
                     pcb.priority++;
                     InsertLast(scheduler->readyQueue[i + 1], pcb);
-                }
-                if (!exit)
                     scheduler->currentQuantum[i] = 0;
-            }
-            if (exit)
-            {
-                i = -1;
-                break;
+                    curr = 0;
+                }
             }
             if (opDone)
                 return;
@@ -120,6 +117,7 @@ void MLFQSStart(MLFQS_Scheduler *scheduler)
             {
                 res = Parse(scheduler->readyQueue[i]->first->pcb);
                 scheduler->readyQueue[i]->first->pcb->programCounter++;
+                scheduler->currentQuantum[i]++;
                 if (res > 0)
                 {
                     // should be blocked
@@ -132,7 +130,7 @@ void MLFQSStart(MLFQS_Scheduler *scheduler)
                     MLFQSFree(scheduler, -res);
                     exit = true;
                 }
-                scheduler->currentQuantum[i]++;
+
                 if (exit)
                     break;
             }
@@ -151,9 +149,9 @@ void MLFQSStart(MLFQS_Scheduler *scheduler)
                     // MakeReady(scheduler->readyQueue[i]->first->pcb)
                     InsertLast(scheduler->readyQueue[i], RemoveFirst(scheduler->readyQueue[i]));
                 }
-                else if (scheduler->currentQuantum[i] == scheduler->timeQuantum[i] && (i != 0 || ((scheduler->readyQueue[0] + scheduler->readyQueue[1]->size + scheduler->readyQueue[2]->size + scheduler->readyQueue[3]->size) && scheduler->readyQueue[i]->size)))
+                else if (scheduler->currentQuantum[i] == scheduler->timeQuantum[i])
                 {
-                    // either not the first, or it is the first but everything else is non empty, so either way push down
+                    // push down
                     // MakeReady(scheduler->readyQueue[i]->first->pcb)
                     PCB pcb = RemoveFirst(scheduler->readyQueue[i]);
                     pcb.priority++;

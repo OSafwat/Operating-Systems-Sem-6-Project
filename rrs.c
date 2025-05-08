@@ -67,6 +67,7 @@ void RRSStart(RR_Scheduler *scheduler)
         {
             res = Parse(scheduler->readyQueue->first->pcb);
             scheduler->readyQueue->first->pcb->programCounter++;
+            scheduler->currentQuantum++;
             if (res > 0)
             {
                 // blocked
@@ -81,7 +82,6 @@ void RRSStart(RR_Scheduler *scheduler)
                 RRSFree(scheduler, -res);
                 res = 0;
             }
-            scheduler->currentQuantum++;
         }
         scheduler->currentQuantum = 0;
 
