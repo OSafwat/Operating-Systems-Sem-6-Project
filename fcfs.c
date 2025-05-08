@@ -25,9 +25,9 @@ void FCFSStep(FCFS_Scheduler *scheduler)
 {
     if (!scheduler->readyQueue->size || !scheduler->currentlyRunning)
         return;
-    int res = Parse(scheduler->readyQueue->first->pcb);
+    Parse(scheduler->readyQueue->first->pcb);
     scheduler->readyQueue->first->pcb->programCounter++;
-    if (scheduler->readyQueue->first->pcb->programCounter == scheduler->readyQueue->first->pcb->memEnd)
+    if (scheduler->readyQueue->first->pcb->programCounter == scheduler->readyQueue->first->pcb->memEnd + 1)
     {
         FCFSRemoveTask(scheduler);
     }

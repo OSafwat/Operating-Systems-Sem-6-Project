@@ -8,9 +8,9 @@
 #include "rrs.h"
 #include "mlfqs.h"
 
-int fileBlocked = 1;
-int inputBlocked = 1;
-int outputBlocked = 1;
+int fileBlocked = 0;
+int inputBlocked = 0;
+int outputBlocked = 0;
 
 int modifyInputBlocked(int x)
 {
@@ -278,8 +278,6 @@ int Parse(PCB *currentProcess)
     {
         // writeFile: to write data to a file. Example: writeFile x y, where x is the filename and y is the data.
 
-        char *data;
-
         line = strtok(NULL, " \n");
         char *name = strdup(line);
         line = strtok(NULL, " \n");
@@ -303,14 +301,13 @@ int Parse(PCB *currentProcess)
                 dataValue = memory[currentProcess->memStart + 6 + i].value;
                 break;
             }
-
-            char *fileName = malloc(strlen(nameValue) + 5); // Allocate space for name + ".txt"
-            snprintf(fileName, strlen(nameValue) + 5, "%s.txt", nameValue);
-            FILE *file = fopen(fileName, "w");
-            fprintf(file, dataValue);
-            fclose(file);
-            free(fileName);
         }
+        char *fileName = malloc(strlen(nameValue) + 5); // Allocate space for name + ".txt"
+        snprintf(fileName, strlen(nameValue) + 5, "%s.txt", nameValue);
+        FILE *file = fopen(fileName, "w");
+        fprintf(file, dataValue);
+        fclose(file);
+        free(fileName);
         return 0;
     }
     if (strcmp(line, "printFromTo") == 0)
@@ -388,7 +385,7 @@ int Parse(PCB *currentProcess)
         line = strtok(NULL, " \n");
         if (strcmp(line, "userInput") == 0)
         {
-            if (inputBlocked == 1)
+            if (inputBlocked <= 1)
                 InputMutexRelease();
             return -2;
         }
@@ -397,7 +394,7 @@ int Parse(PCB *currentProcess)
         {
             if (strcmp(line, "userOutput") == 0)
             {
-                if (outputBlocked == 1)
+                if (outputBlocked <= 1)
                     OutputMutexRelease();
                 return -3;
             }
@@ -406,7 +403,7 @@ int Parse(PCB *currentProcess)
             {
                 if (strcmp(line, "file") == 0)
                 {
-                    if (fileBlocked == 1)
+                    if (fileBlocked <= 1)
                         FileMutexRelease();
                     return -1;
                 }
@@ -540,18 +537,18 @@ int main()
         return -1;
     }
 
-    PCB pcb1 = CreatePCB(fptr1, 0);
+    // PCB pcb1 = CreatePCB(fptr1, 0);
     PCB pcb2 = CreatePCB(fptr2, 0);
     PCB pcb3 = CreatePCB(fptr3, 0);
 
-    MLFQS_Scheduler *mlfqs;
-    mlfqs = MLFQSCreate();
+    RR_Scheduler *rrs;
+    rrs = RRSCreate(20);
 
-    MLFQSInsertTask(mlfqs, pcb1);
-    MLFQSInsertTask(mlfqs, pcb2);
-    MLFQSInsertTask(mlfqs, pcb3);
+    // RRSInsertTask(rrs, pcb1);
+    RRSInsertTask(rrs, pcb2);
+    RRSInsertTask(rrs, pcb3);
 
-    MLFQSStart(mlfqs);
+    RRSStart(rrs);
 
     // for (int i = 6; i < 15; i++)
     //     printf("Instruction at MEM %d : %s \n", i, memory[i].value); // Instructions ARE being inserted properly
