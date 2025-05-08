@@ -8,9 +8,9 @@
 #include "rrs.h"
 #include "mlfqs.h"
 
-int fileBlocked = 0;
-int inputBlocked = 0;
-int outputBlocked = 0;
+int fileBlocked = 1;
+int inputBlocked = 1;
+int outputBlocked = 1;
 
 int modifyInputBlocked(int x)
 {
