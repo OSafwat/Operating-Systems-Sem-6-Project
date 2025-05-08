@@ -281,25 +281,35 @@ int Parse(PCB *currentProcess)
         char *data;
 
         line = strtok(NULL, " \n");
-        char *source = strdup(line);
+        char *name = strdup(line);
         line = strtok(NULL, " \n");
-        char *destination = strdup(line);
+        char *data = strdup(line);
+
+        char *nameValue;
+        char *dataValue;
 
         for (long i = 0; i < 3; i++)
         {
-            if (strcmp(memory[currentProcess->memStart + 6 + i].name, source) == 0)
+            if (strcmp(memory[currentProcess->memStart + 6 + i].name, name) == 0)
             {
-                data = memory[currentProcess->memStart + 6 + i].value;
+                nameValue = memory[currentProcess->memStart + 6 + i].value;
                 break;
             }
         }
         for (int i = 0; i < 3; i++)
         {
-            if (strcmp(memory[currentProcess->memStart + 6 + i].name, destination) == 0)
+            if (strcmp(memory[currentProcess->memStart + 6 + i].name, data) == 0)
             {
-                memory[currentProcess->memStart + 6 + i].value = data;
+                dataValue = memory[currentProcess->memStart + 6 + i].value;
                 break;
             }
+
+            char *fileName = malloc(strlen(nameValue) + 5); // Allocate space for name + ".txt"
+            snprintf(fileName, strlen(nameValue) + 5, "%s.txt", nameValue);
+            FILE *file = fopen(fileName, "w");
+            fprintf(file, dataValue);
+            fclose(file);
+            free(fileName);
         }
         return 0;
     }
